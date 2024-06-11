@@ -28,6 +28,11 @@ export class PaymentSessionItemDto {
   @IsPositive()
   price: number;
 
+  
+  @IsString()
+  image:string;
+
+
   @IsNumber()
   @IsPositive()
   quantity: number;

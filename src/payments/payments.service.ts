@@ -24,8 +24,9 @@ export class PaymentsService {
           currency: currency,
           product_data: {
             name: item.name,
+            images: [item.image],
           },
-          unit_amount: Math.round(item.price * 100), // 20 dólares 2000 / 100 = 20.00 // 15.0000
+          unit_amount: item.price * 1000
         },
         quantity: item.quantity,
       };
