@@ -1,9 +1,15 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { NATS_SERVICE, envs } from 'src/config';
 import Stripe from 'stripe';
 import { PaymentSessionDto } from './dto/payment-session.dto';
 import { Request, Response } from 'express';
 // import { ClientProxy } from '@nestjs/microservices';
+import { DataSource, Repository } from 'typeorm'; 
+import { Payment } from './entities/payment.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { CreatePaymentDto } from './dto/create-payment.dto';
+import { UsersService } from 'src/users/users.service';
+import { PaginationDto } from '../common/dtos/pagination.dto';
 
 @Injectable()
 export class PaymentsService {
@@ -11,7 +17,83 @@ export class PaymentsService {
   private readonly stripe = new Stripe(envs.stripeSecret);
   private readonly logger = new Logger('PaymentsService');
 
-  constructor() {}
+  constructor(   
+  @InjectRepository(Payment)
+  private readonly paymentRepository: Repository<Payment>,
+  private readonly usersService: UsersService,
+  
+  
+  private readonly dataSource: DataSource
+) {}
+
+async create(createPaymentDto: CreatePaymentDto) {
+  try {
+    const {...PaymentDetails} = createPaymentDto;
+    const Payment = this.paymentRepository.create({
+      ...PaymentDetails
+    });
+
+    const userdatos = await this.usersService.findOne( PaymentDetails.idUser);
+    //console.log("Datos", userdatos);
+
+   
+    const savedPayment = await this.paymentRepository.save(Payment);
+
+    return {
+      ...savedPayment,
+      user: userdatos
+    };
+    
+  } catch (error) {
+    
+    this.logger.error(error.message);
+    return error.message;
+  }
+}
+
+async findAll(paginationDto: PaginationDto) {
+  const { limit = 10, offset = 0 } = paginationDto;
+
+  const payments = await this.paymentRepository.find({
+    take: limit,
+    skip: offset,
+  });
+
+  const paymentsWithUser = await Promise.all(
+    payments.map(async (payment) => {
+      const userdatos = await this.usersService.findOne(payment.idUser);
+      return {
+        ...payment,
+        user: userdatos
+      };
+    })
+  );
+
+  return paymentsWithUser;
+}
+
+  async findOne(id : number) {
+    let payment: Payment;
+  
+    const queryBuilder = this.paymentRepository.createQueryBuilder();
+    payment = await queryBuilder
+      .where('id =:id ',{
+        id:id,
+      })
+      .getOne();
+  
+    if(!payment){
+      throw new NotFoundException(`Payment con id ${id} no encontrada`);
+    }
+  
+    const userdatos = await this.usersService.findOne(payment.idUser);
+  
+    return {
+      ...payment,
+      user: userdatos
+    };
+  }
+
 
 
 

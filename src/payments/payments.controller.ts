@@ -1,12 +1,29 @@
-import { Controller, Get, Post, Req, Res } from '@nestjs/common';
+import { Controller, Get,Body, Post, Req, Res, Query, Param } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { PaymentsService } from './payments.service';
 import { PaymentSessionDto } from './dto/payment-session.dto';
 import { Request, Response } from 'express';
+import { CreatePaymentDto } from './dto/create-payment.dto';
+import { PaginationDto } from '../common/dtos/pagination.dto';
 
 @Controller('payments')
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
+
+  @Post()
+  create(@Body() createPaymentDto:CreatePaymentDto) {
+    return this.paymentsService.create(createPaymentDto);
+  }
+
+  @Get()
+  findAll( @Query() paginationDto:PaginationDto)  {
+    return this.paymentsService.findAll(paginationDto);
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: number) {
+    return this.paymentsService.findOne(id);
+  }
 
 
   @Post('create-payment-session')
