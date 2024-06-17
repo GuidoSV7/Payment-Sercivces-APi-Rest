@@ -32,7 +32,7 @@ export class UsersService {
     // Name
     if ( !user ) {
       user = await this.userModel.findOne({ name: term.toLowerCase().trim() })
-    }
+    }            
 
 
     if ( !user ) 

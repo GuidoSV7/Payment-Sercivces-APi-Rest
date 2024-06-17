@@ -25,6 +25,11 @@ export class PaymentsController {
     return this.paymentsService.findOne(id);
   }
 
+  @Get('accomodation/:id')
+  findAllPaymentsByAccomodationId(@Param('id') id: string) {
+    return this.paymentsService.findAllPaymentsByAccomodationId(id);
+  }
+
 
   @Post('create-payment-session')
   //@MessagePattern('create.payment.session')

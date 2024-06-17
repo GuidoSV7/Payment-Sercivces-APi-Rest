@@ -20,10 +20,14 @@ export class Payment {
     
     @Column()
     amount: number;
-  
-    // This is the field that will store the user ID from MongoDB
+    
+    @Column()
+    accomodation: string;
+
     @Column()
     idUser: string;
+
+    
     
 
 

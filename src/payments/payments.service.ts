@@ -94,6 +94,31 @@ async findAll(paginationDto: PaginationDto) {
     };
   }
 
+  async findAllPaymentsByAccomodationId(accomodation : string) {
+    let payments: Payment[];
+  
+    const queryBuilder = this.paymentRepository.createQueryBuilder();
+    payments = await queryBuilder
+      .where('accomodation =:accomodation ',{
+        accomodation: accomodation,
+      })
+      .getMany();
+  
+    if(!payments || payments.length === 0){
+      throw new NotFoundException(`Payments with accomodation id ${accomodation} not found`);
+    }
+  
+    const paymentsWithUser = await Promise.all(payments.map(async (payment) => {
+      const userdatos = await this.usersService.findOne(payment.idUser);
+      return {
+        ...payment,
+        user: userdatos
+      };
+    }));
+  
+    return paymentsWithUser;
+}
+ 
 
 
 

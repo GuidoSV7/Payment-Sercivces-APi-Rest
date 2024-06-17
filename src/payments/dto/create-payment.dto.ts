@@ -15,9 +15,14 @@ export class CreatePaymentDto {
  
     @IsNumber()
     amount: number;
-    
+
+    @IsString()
+    accomodation: string;
 
     @IsString()
     idUser: string;
+
+
+
 
 }
